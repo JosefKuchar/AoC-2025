@@ -1,90 +1,69 @@
 advent_of_code::solution!(2);
 
-fn is_invalid(id: u64) -> bool {
-    let id = id.to_string();
+use itertools::Itertools;
 
-    if id.len() % 2 != 0 {
-        return false;
+fn count_digits(num: u64) -> u64 {
+    if num == 0 {
+        return 1;
     }
-
-    id[0..id.len() / 2] == id[id.len() / 2..]
+    (num as f64).log10() as u64 + 1
 }
 
-fn is_invalid2(id: u64) -> bool {
-    let id = id.to_string();
-
-    for i in 1..id.len() {
-        if id.len() % i != 0 {
-            continue;
+fn check(id: u64, a: u64) -> bool {
+    let exp = 10_u64.pow(a as u32);
+    let first = id % exp;
+    let mut rest = id / exp;
+    while rest > 0 {
+        let second = rest % exp;
+        if first != second {
+            break;
         }
-
-        let mut invalid = true;
-        let mut offset = 0;
-        loop {
-            let first = &id[offset..offset + i];
-            let second = &id[offset + i..offset + 2 * i];
-            if first != second {
-                invalid = false;
-                break;
-            }
-            offset += i;
-            if offset + i >= id.len() || offset + 2 * i > id.len() {
-                break;
-            }
-        }
-
-        if invalid {
-            return true;
-        }
+        rest /= exp;
     }
+    rest == 0
+}
 
-    false
+fn is_invalid_part_one(id: u64) -> bool {
+    let digits = count_digits(id);
+    if digits % 2 != 0 {
+        return false;
+    }
+    check(id, digits / 2)
+}
+
+fn is_invalid_part_two(id: u64) -> bool {
+    let digits = count_digits(id);
+    (1..(digits / 2 + 1)).any(|i| check(id, i))
+}
+
+fn solve(input: &str, is_invalid: fn(u64) -> bool) -> Option<u64> {
+    Some(
+        parse_input(input)
+            .iter()
+            .flat_map(|(start, end)| (*start..=*end))
+            .filter(|num| is_invalid(*num))
+            .sum(),
+    )
+}
+
+fn parse_input(input: &str) -> Vec<(u64, u64)> {
+    input
+        .split(',')
+        .filter_map(|range| {
+            range
+                .split('-')
+                .filter_map(|num| num.parse::<u64>().ok())
+                .next_tuple::<(u64, u64)>()
+        })
+        .collect()
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let ranges = input
-        .split(',')
-        .map(|range| {
-            range
-                .split('-')
-                .map(|num| num.parse::<u64>().unwrap())
-                .collect::<Vec<u64>>()
-        })
-        .collect::<Vec<Vec<u64>>>();
-
-    let mut sum = 0;
-    for range in ranges {
-        let (start, end) = (range[0], range[1]);
-        for num in start..=end {
-            if is_invalid(num) {
-                sum += num;
-            }
-        }
-    }
-    Some(sum)
+    solve(input, is_invalid_part_one)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let ranges = input
-        .split(',')
-        .map(|range| {
-            range
-                .split('-')
-                .map(|num| num.parse::<u64>().unwrap())
-                .collect::<Vec<u64>>()
-        })
-        .collect::<Vec<Vec<u64>>>();
-
-    let mut sum = 0;
-    for range in ranges {
-        let (start, end) = (range[0], range[1]);
-        for num in start..=end {
-            if is_invalid2(num) {
-                sum += num;
-            }
-        }
-    }
-    Some(sum)
+    solve(input, is_invalid_part_two)
 }
 
 #[cfg(test)]

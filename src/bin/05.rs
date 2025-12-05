@@ -1,53 +1,37 @@
 advent_of_code::solution!(5);
 
-pub fn part_one(input: &str) -> Option<u64> {
-    let mut parts = input.split("\n\n");
-    let ranges = parts
-        .next()
-        .unwrap()
+pub fn parse_input(input: &str) -> (Vec<(u64, u64)>, Vec<u64>) {
+    let (ranges_str, numbers_str) = input.split_once("\n\n").unwrap();
+    let ranges = ranges_str
         .lines()
         .map(|line| {
-            let parts = line
-                .split("-")
-                .map(|part| part.parse::<u64>().unwrap())
-                .collect::<Vec<u64>>();
-            (parts[0], parts[1])
+            let (start, end) = line.split_once("-").unwrap();
+            (start.parse().unwrap(), end.parse().unwrap())
         })
-        .collect::<Vec<(u64, u64)>>();
-    let numbers = parts
-        .next()
-        .unwrap()
+        .collect();
+    let numbers = numbers_str
         .lines()
-        .map(|line| line.parse::<u64>().unwrap())
-        .collect::<Vec<u64>>();
+        .map(|line| line.parse().unwrap())
+        .collect();
+    (ranges, numbers)
+}
 
-    let mut count = 0;
-    for number in numbers {
-        for range in &ranges {
-            if number >= range.0 && number <= range.1 {
-                count += 1;
-                break;
-            }
-        }
-    }
-    Some(count as u64)
+pub fn part_one(input: &str) -> Option<u64> {
+    let (ranges, numbers) = parse_input(input);
+    Some(
+        numbers
+            .into_iter()
+            .filter(|number| {
+                ranges
+                    .iter()
+                    .any(|range| *number >= range.0 && *number <= range.1)
+            })
+            .count() as u64,
+    )
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let mut parts = input.split("\n\n");
-    let mut ranges = parts
-        .next()
-        .unwrap()
-        .lines()
-        .map(|line| {
-            let parts = line
-                .split("-")
-                .map(|part| part.parse::<u64>().unwrap())
-                .collect::<Vec<u64>>();
-            (parts[0], parts[1])
-        })
-        .collect::<Vec<(u64, u64)>>();
-
+    let (mut ranges, _) = parse_input(input);
     ranges.sort_by(|a, b| a.0.cmp(&b.0));
 
     let mut count = 0;

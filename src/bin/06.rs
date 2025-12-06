@@ -14,8 +14,7 @@ fn solve(numbers: &Vec<Vec<u64>>, operations: &Vec<&str>) -> u64 {
 }
 
 fn transpose<T: Clone>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
-    let len = v[0].len();
-    (0..len)
+    (0..v[0].len())
         .map(|i| v.iter().map(|row| row[i].clone()).collect())
         .collect()
 }

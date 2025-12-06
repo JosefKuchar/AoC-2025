@@ -40,7 +40,7 @@ fn solve(input: &str, is_invalid: fn(u64) -> bool) -> Option<u64> {
     Some(
         parse_input(input)
             .iter()
-            .flat_map(|(start, end)| (*start..=*end))
+            .flat_map(|(start, end)| *start..=*end)
             .filter(|num| is_invalid(*num))
             .sum(),
     )

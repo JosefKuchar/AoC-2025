@@ -1,5 +1,25 @@
 advent_of_code::solution!(6);
 
+fn solve(numbers: &Vec<Vec<u64>>, operations: &Vec<&str>) -> u64 {
+    numbers
+        .iter()
+        .zip(operations.iter())
+        .fold(0, |acc, (numbers, operation)| {
+            acc + if *operation == "+" {
+                numbers.iter().sum::<u64>()
+            } else {
+                numbers.iter().product::<u64>()
+            }
+        })
+}
+
+fn transpose<T: Clone>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
+    let len = v[0].len();
+    (0..len)
+        .map(|i| v.iter().map(|row| row[i].clone()).collect())
+        .collect()
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
     let lines = input
         .lines()
@@ -14,67 +34,35 @@ pub fn part_one(input: &str) -> Option<u64> {
                 .collect::<Vec<u64>>()
         })
         .collect::<Vec<Vec<u64>>>();
-    let mut sum = 0;
-    for (i, operation) in operations.iter().enumerate() {
-        if *operation == "+" {
-            let mut column = 0;
-            for j in 0..numbers.len() {
-                column += numbers[j][i];
-            }
-            sum += column;
-        } else if *operation == "*" {
-            let mut column = 1;
-            for j in 0..numbers.len() {
-                column *= numbers[j][i];
-            }
-            sum += column;
-        }
-    }
-    Some(sum)
+    let numbers = transpose(numbers);
+    Some(solve(&numbers, operations))
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let lines = input.lines().collect::<Vec<&str>>();
     let (operations, numbers) = lines.split_last().unwrap();
-    let numbers = numbers
+    let chars = numbers
         .iter()
         .map(|line| line.chars().collect::<Vec<char>>())
         .collect::<Vec<Vec<char>>>();
     let operations = operations.split_whitespace().collect::<Vec<&str>>();
-    let mut op_index = 0;
-    let mut sum = 0;
-    let mut current_sum = 0;
-    if operations[op_index] == "+" {
-        current_sum = 0;
-    } else if operations[op_index] == "*" {
-        current_sum = 1;
-    }
-    for i in 0..numbers[0].len() {
+    let mut numbers: Vec<Vec<u64>> = Vec::new();
+    let mut current: Vec<u64> = Vec::new();
+    for i in 0..chars[0].len() {
         let mut number = String::new();
-        for j in 0..numbers.len() {
-            number += &numbers[j][i].to_string();
+        for j in 0..chars.len() {
+            number += &chars[j][i].to_string();
         }
         let number = number.trim();
         if number == "" {
-            op_index += 1;
-            sum += current_sum;
-            if operations[op_index] == "+" {
-                current_sum = 0;
-            } else if operations[op_index] == "*" {
-                current_sum = 1;
-            }
+            numbers.push(current);
+            current = Vec::new();
             continue;
         }
-        let number = number.parse::<u64>().unwrap();
-        if operations[op_index] == "+" {
-            current_sum += number;
-        } else if operations[op_index] == "*" {
-            current_sum *= number;
-        }
+        current.push(number.parse::<u64>().unwrap());
     }
-    sum += current_sum;
-
-    Some(sum)
+    numbers.push(current);
+    Some(solve(&numbers, &operations))
 }
 
 #[cfg(test)]

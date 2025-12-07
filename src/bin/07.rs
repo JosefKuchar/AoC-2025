@@ -61,15 +61,14 @@ pub fn part_two(input: &str) -> Option<u64> {
     for row in map.iter() {
         let mut new_timelines = vec![0; map[0].len()];
         for (j, count) in timelines.iter().enumerate() {
-            if *count == 0 {
-                continue;
-            }
-            let cell = row[j];
-            if cell == '^' {
-                new_timelines[j - 1] += count;
-                new_timelines[j + 1] += count;
-            } else {
-                new_timelines[j] += count;
+            match row[j] {
+                '^' => {
+                    new_timelines[j - 1] += count;
+                    new_timelines[j + 1] += count;
+                }
+                _ => {
+                    new_timelines[j] += count;
+                }
             }
         }
         timelines = new_timelines;
